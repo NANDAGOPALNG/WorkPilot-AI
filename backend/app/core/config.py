@@ -24,6 +24,9 @@ class Settings(BaseSettings):
     supabase_url: str
     supabase_service_role_key: str
 
+    # Optional (checked when ingestion/embedding actually runs)
+    gemini_api_key: str | None = None
+
     # Optional, with defaults
     supabase_storage_bucket: str = "knowledge-documents"
     embedding_model: str = "gemini-embedding-001"
