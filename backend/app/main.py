@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api.routes import documents
+from app.api.routes import documents, knowledge
 from app.core.config import ConfigError
 from app.core.database import get_supabase
 
@@ -27,6 +27,7 @@ app.add_middleware(
 )
 
 app.include_router(documents.router)
+app.include_router(knowledge.router)
 
 
 @app.get("/health")

@@ -1,7 +1,7 @@
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import ValidationError, field_validator
+from pydantic import Field, ValidationError, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # backend/.env, resolved from this file so it works regardless of the working directory.
@@ -32,6 +32,11 @@ class Settings(BaseSettings):
     embedding_model: str = "gemini-embedding-001"
     embedding_dimension: int = 768  # must match vector(768) in the SQL migrations
     frontend_url: str = "http://localhost:5173"
+
+    # RAG question answering
+    llm_model: str = "gemini-2.5-flash"  # any Gemini text model your key can use
+    retrieval_top_k: int = Field(default=5, ge=1, le=20)
+    retrieval_threshold: float = Field(default=0.5, ge=0.0, le=1.0)  # min cosine similarity
 
     @field_validator("supabase_url")
     @classmethod

@@ -99,3 +99,6 @@ def _call_with_retry(client, model, batch, config):
             # Log only the exception type/code, never request details.
             logger.error("Embedding call failed: %s (code %s)", type(exc).__name__, code)
             raise EmbeddingError("Embedding request to Gemini failed.") from None
+
+
+get_client = _get_client  # shared Gemini client, also used by llm_service
