@@ -17,7 +17,7 @@ class Settings(BaseSettings):
         env_file=ENV_FILE,
         env_file_encoding="utf-8",
         env_ignore_empty=True,  # `SUPABASE_URL=` (blank) counts as missing
-        extra="ignore",         # other vars in .env (Agora, LLM, ...) are for later steps
+        extra="ignore",         # unknown vars in .env are ignored
     )
 
     # Required
@@ -32,6 +32,21 @@ class Settings(BaseSettings):
     embedding_model: str = "gemini-embedding-001"
     embedding_dimension: int = 768  # must match vector(768) in the SQL migrations
     frontend_url: str = "http://localhost:5173"
+
+    # Agora Conversational AI (optional: only needed for /api/agora/* voice sessions; backend only, never the frontend)
+    agora_app_id: str | None = None
+    agora_app_certificate: str | None = None   # secret: signs RTC tokens
+    agora_customer_id: str | None = None       # secret: Agora RESTful API key (Console -> Developer Toolkit)
+    agora_customer_secret: str | None = None   # secret
+    agora_api_base_url: str = "https://api.agora.io/api/conversational-ai-agent/v2"
+    agora_agent_uid: int = Field(default=1000, ge=1, le=2_000_000_000)          # the agent's RTC uid
+    agora_token_ttl_seconds: int = Field(default=3600, ge=60, le=86400)         # RTC token lifetime (Agora max 24h)
+    agora_idle_timeout_seconds: int = Field(default=120, ge=1, le=3600)         # agent leaves this long after the user does
+    agora_http_timeout_seconds: float = Field(default=15.0, gt=0, le=60)
+    agora_asr_language: str = "en-US"
+    agora_llm_model: str = "gpt-4o-mini"
+    agora_tts_voice_id: str = "English_captivating_female1"
+    agora_greeting: str = "Hi, I'm WorkPilot. How can I help you today?"
 
     # RAG question answering
     llm_model: str = "gemini-2.5-flash"  # any Gemini text model your key can use

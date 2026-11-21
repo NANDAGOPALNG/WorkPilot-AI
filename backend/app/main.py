@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from app.api.routes import agent_tools, documents, generated_documents, knowledge, tickets
+from app.api.routes import agent_tools, agora, documents, generated_documents, knowledge, tickets
 from app.core.config import ConfigError
 from app.core.database import get_supabase
 
@@ -31,6 +31,7 @@ app.include_router(knowledge.router)
 app.include_router(tickets.router)
 app.include_router(generated_documents.router)
 app.include_router(agent_tools.router)  # NOTE: unauthenticated; protect before any public deployment
+app.include_router(agora.router)  # NOTE: unauthenticated demo API; protect before any public deployment
 
 
 @app.get("/health")
