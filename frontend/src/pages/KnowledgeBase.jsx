@@ -1,12 +1,20 @@
-import { Construction } from 'lucide-react'
-import Card from '../components/ui/Card'
+import DocumentList from '../components/knowledge/DocumentList'
+import DocumentUpload from '../components/knowledge/DocumentUpload'
+import { useDocuments } from '../hooks/useDocuments'
 
 export default function KnowledgeBase() {
+  const { documents, loading, error, refresh } = useDocuments()
   return (
-    <Card className="placeholder">
-      <Construction size={28} aria-hidden="true" />
-      <h2>Knowledge Base — coming later</h2>
-      <p>Document upload and browsing will live here. This screen has not been built yet; nothing here is functional.</p>
-    </Card>
+    <div className="kb">
+      <div className="kb-intro">
+        <h2>Knowledge Base</h2>
+        <p>
+          The documents you upload here power WorkPilot's knowledge and answers. The assistant searches them to
+          respond to questions about your company, so keep the library current.
+        </p>
+      </div>
+      <DocumentUpload onUploadFinished={refresh} />
+      <DocumentList documents={documents} loading={loading} error={error} onRefresh={refresh} />
+    </div>
   )
 }
