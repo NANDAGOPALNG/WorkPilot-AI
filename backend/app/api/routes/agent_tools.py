@@ -7,19 +7,22 @@ Every tool endpoint answers with one envelope:
 The tools only call the existing services (rag_service, ticket_service, documentation_service);
 no embedding, retrieval, LLM or database logic is duplicated here.
 
-SECURITY: these endpoints have NO authentication. They are meant for local development and the
-hackathon demo only. Protect them (e.g. a shared secret header or the platform's auth) and restrict
-CORS/network access before any public deployment.
+SECURITY: the four POST tool routes require the X-WorkPilot-Tool-Secret header whenever
+AGORA_TOOLS_SHARED_SECRET is set (see app/api/dependencies.py). With the secret unset they stay open for plain
+local development, so ALWAYS set it before exposing the backend through a public URL. `GET /tools` (the
+catalogue of definitions) is intentionally open. This is not user authentication: restrict CORS/network access
+and add real auth before a production deployment.
 """
 import logging
 from typing import Callable
 
-from fastapi import APIRouter, Request
+from fastapi import APIRouter, Depends, Request
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.routing import APIRoute
 
+from app.api.dependencies import require_agora_tool_auth
 from app.core.config import ConfigError
 from app.schemas.agent import (
     TOOL_DEFINITIONS,
@@ -82,6 +85,7 @@ class AgentToolRoute(APIRoute):
 
 
 router = APIRouter(prefix="/api/agent", tags=["agent-tools"], route_class=AgentToolRoute)
+TOOL_AUTH = [Depends(require_agora_tool_auth)]  # applied per POST route; the read-only catalogue stays open
 
 
 def _run(tool: str, fn: Callable[[], JSONResponse]) -> JSONResponse:
@@ -116,7 +120,7 @@ def list_tools():
 
 # ----------------------------------------------------------------------------- search_knowledge
 # Plain `def` routes run in FastAPI's threadpool, so the blocking Supabase/Gemini calls are fine.
-@router.post("/tools/search_knowledge")
+@router.post("/tools/search_knowledge", dependencies=TOOL_AUTH)
 def search_knowledge(body: SearchKnowledgeInput):
     tool = "search_knowledge"
 
@@ -147,7 +151,7 @@ def search_knowledge(body: SearchKnowledgeInput):
 
 
 # ----------------------------------------------------------------------------- create_ticket
-@router.post("/tools/create_ticket")
+@router.post("/tools/create_ticket", dependencies=TOOL_AUTH)
 def create_ticket(body: CreateTicketInput):
     """Two-step: without `confirmed` this only previews (nothing is written); with confirmed=true it creates."""
     tool = "create_ticket"
@@ -179,14 +183,14 @@ def create_ticket(body: CreateTicketInput):
 
 
 # ----------------------------------------------------------------------------- get_ticket_status
-@router.post("/tools/get_ticket_status")
+@router.post("/tools/get_ticket_status", dependencies=TOOL_AUTH)
 def get_ticket_status(body: GetTicketStatusInput):
     tool = "get_ticket_status"
     return _run(tool, lambda: _success(tool, {"ticket": _ticket_view(ticket_service.get_ticket(body.ticket_id_or_number))}))
 
 
 # ----------------------------------------------------------------------------- generate_document
-@router.post("/tools/generate_document")
+@router.post("/tools/generate_document", dependencies=TOOL_AUTH)
 def generate_document(body: GenerateDocumentInput):
     tool = "generate_document"
 

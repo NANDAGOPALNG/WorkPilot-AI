@@ -26,11 +26,15 @@ CUSTOMER_SECRET = "customer-secret-LEAKCHECK"
 BASIC = base64.b64encode(f"{CUSTOMER_ID}:{CUSTOMER_SECRET}".encode()).decode()
 SECRETS = [CERT, CUSTOMER_ID, CUSTOMER_SECRET, BASIC]
 AGENT_ID = "1NT29X10YHxxxxxWJOXLYHNYB"
+# start_session now requires the Agora custom-tool settings (see tests/test_agora_tools.py).
+TOOLS_URL = "https://tools.example.com"
+TOOLS_SECRET = "tools-secret-LEAKCHECK-0123456789"
 
 
 def make_settings(**over) -> Settings:
     base = dict(supabase_url="https://x.supabase.co", supabase_service_role_key="k", agora_app_id=APP_ID,
-                agora_app_certificate=CERT, agora_customer_id=CUSTOMER_ID, agora_customer_secret=CUSTOMER_SECRET)
+                agora_app_certificate=CERT, agora_customer_id=CUSTOMER_ID, agora_customer_secret=CUSTOMER_SECRET,
+                agora_tools_base_url=TOOLS_URL, agora_tools_shared_secret=TOOLS_SECRET)
     return Settings(_env_file=None, **{**base, **over})
 
 

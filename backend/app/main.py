@@ -30,7 +30,7 @@ app.include_router(documents.router)
 app.include_router(knowledge.router)
 app.include_router(tickets.router)
 app.include_router(generated_documents.router)
-app.include_router(agent_tools.router)  # NOTE: unauthenticated; protect before any public deployment
+app.include_router(agent_tools.router)  # POST tool routes need X-WorkPilot-Tool-Secret when AGORA_TOOLS_SHARED_SECRET is set
 app.include_router(agora.router)  # NOTE: unauthenticated demo API; protect before any public deployment
 
 

@@ -65,6 +65,7 @@ class AgoraClient:
         self._auth = "Basic " + base64.b64encode(raw.encode()).decode()
         self._secrets = [v for v in (
             self._s.agora_app_certificate, self._s.agora_customer_secret, self._s.agora_customer_id,
+            (self._s.agora_tools_shared_secret or "").strip(),  # sent inside the join payload
             self._auth, self._auth.removeprefix("Basic "),
         ) if v]
 

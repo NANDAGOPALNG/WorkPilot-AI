@@ -48,6 +48,12 @@ class Settings(BaseSettings):
     agora_tts_voice_id: str = "English_captivating_female1"
     agora_greeting: str = "Hi, I'm WorkPilot. How can I help you today?"
 
+    # Agora custom tools: Agora's cloud calls the four agent-tool routes of THIS backend over public HTTPS.
+    # Both are validated when a voice session starts (app/services/agora_tools.py), not here, so a mistake in
+    # them can never stop the rest of the backend from loading its settings.
+    agora_tools_base_url: str | None = None        # public https:// origin of this backend, e.g. a tunnel or deployed URL
+    agora_tools_shared_secret: str | None = None   # secret: sent by Agora in a header, checked on every tool call
+
     # RAG question answering
     llm_model: str = "gemini-2.5-flash"  # any Gemini text model your key can use
     retrieval_top_k: int = Field(default=5, ge=1, le=20)
