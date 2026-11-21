@@ -50,6 +50,14 @@ def retrieve_chunks(question: str, *, top_k=None, threshold=None, db=None, embed
         logger.exception("match_document_chunks RPC failed")
         raise RetrievalError("Document search failed.", 502) from None
 
+    rows = [row for row in (response.data or []) if row.get("content")]
+    # Diagnostics only: counts and the best score, never the question or document text.
+    logger.info(
+        "Retrieval: %d chunk(s) at or above threshold %.2f (top_k=%d, best similarity=%s)",
+        len(rows), threshold, top_k,
+        f"{max(float(r['similarity']) for r in rows):.3f}" if rows else "n/a",
+    )
+
     return [
         {
             "chunk_id": str(row["chunk_id"]),
@@ -59,6 +67,5 @@ def retrieve_chunks(question: str, *, top_k=None, threshold=None, db=None, embed
             "content": row["content"],
             "similarity": float(row["similarity"]),
         }
-        for row in (response.data or [])
-        if row.get("content")
+        for row in rows
     ]

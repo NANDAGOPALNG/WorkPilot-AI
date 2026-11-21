@@ -76,6 +76,16 @@ def test_search_knowledge_success(monkeypatch):
     assert "content" not in data["sources"][0] and "chunk_id" not in data["sources"][0]
 
 
+def test_search_knowledge_logs_invocation_without_the_question_text(monkeypatch, caplog):
+    # Diagnostics: shows in the server log that Agora called the tool, but never leaks what was asked or answered.
+    monkeypatch.setattr(rag_service, "answer_question", lambda q: RAG_RESULT)
+    with caplog.at_level("INFO", logger="workpilot.agent_tools"):
+        assert_success(call("search_knowledge", {"question": "Secret salary question?"}), "search_knowledge")
+    text = " ".join(r.getMessage() for r in caplog.records)
+    assert "search_knowledge called" in text and "found=True" in text and "chunks_retrieved=2" in text
+    assert "Secret salary" not in text and "Restart the client" not in text
+
+
 def test_search_knowledge_no_documents_found(monkeypatch, fake_db):
     # Real RAG service with no retrieved chunks: nothing is generated and no citations are invented.
     monkeypatch.setattr("app.services.retrieval_service.retrieve_chunks", lambda q, top_k=None, threshold=None: [])

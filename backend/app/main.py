@@ -10,6 +10,24 @@ from app.core.database import get_supabase
 
 logger = logging.getLogger("workpilot")
 
+
+def _configure_app_logging() -> None:
+    """Make the app's own INFO logs (workpilot.*) visible.
+
+    uvicorn only configures its own loggers, so without this every logger.info() in the app is dropped and only
+    warnings appear. No handler is added when the host process (or a test runner) already set logging up.
+    """
+    app_logger = logging.getLogger("workpilot")
+    if app_logger.handlers or logging.getLogger().handlers:
+        return
+    handler = logging.StreamHandler()
+    handler.setFormatter(logging.Formatter("%(levelname)s:     %(name)s - %(message)s"))
+    app_logger.addHandler(handler)
+    app_logger.setLevel(logging.INFO)
+
+
+_configure_app_logging()
+
 app = FastAPI(
     title="WorkPilot AI",
     description="Voice-first enterprise AI assistant",

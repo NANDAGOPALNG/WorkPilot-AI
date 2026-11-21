@@ -14,6 +14,7 @@ catalogue of definitions) is intentionally open. This is not user authentication
 and add real auth before a production deployment.
 """
 import logging
+import time
 from typing import Callable
 
 from fastapi import APIRouter, Depends, Request
@@ -125,7 +126,16 @@ def search_knowledge(body: SearchKnowledgeInput):
     tool = "search_knowledge"
 
     def run():
+        started = time.monotonic()
+        # Diagnostics for "is Agora actually calling this tool?": length only, never the question text.
+        logger.info("search_knowledge called (question length %d)", len(body.question))
         result = rag_service.answer_question(body.question)
+        meta = result.get("metadata") or {}
+        logger.info(
+            "search_knowledge done in %.1fs: found=%s, chunks_retrieved=%s, chunks_used=%s, answer length %d",
+            time.monotonic() - started, bool(result.get("sources")), meta.get("chunks_retrieved"),
+            meta.get("chunks_used"), len(result.get("answer") or ""),
+        )
         sources = [
             {
                 "ref": s["ref"],
